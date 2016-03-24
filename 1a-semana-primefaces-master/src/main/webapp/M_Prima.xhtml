@@ -1,0 +1,120 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	template="/WEB-INF/templates/Layout.xhtml">
+
+	<ui:define name="content">
+	
+		<h1 class="aw-page-title">Materias Primas</h1>
+
+		<h:form id="formPrincipal">
+			
+			<p:messages autoUpdate="false" />
+			<p:growl id="messages" showDetail="false" life="3000" sticky="false" styleClass="ui-growl-magno"/>
+					
+			<p:dataTable var="lista" value="#{mprima.todasM_Prima}" emptyMessage="Nenhum item adicionado." reflow="true"
+				id="tabelaPessoas" style="width:100% ">
+				<f:facet name="header">
+                                Lista das Materias Primas 				
+				</f:facet>
+
+				<p:column  width="55">
+
+					<f:facet name="header">
+						<p:commandLink title="Incluir" style="float: center"
+							oncomplete="PF('dialogCadastrar').show()" update="formCadastrar" >
+							<p:graphicImage value="/resources/algaworks/images/cadastro.PNG" />
+						</p:commandLink>
+					</f:facet>
+					<p:commandLink title="Alterar" update=":formAlterar:Alterar"
+						oncomplete="PF('dialogAlterar').show()" immediate="true">
+						<p:graphicImage value="/resources/algaworks/images/alterar.PNG" />
+						<f:setPropertyActionListener target="#{mprima.mprima}" value="#{lista}" />
+
+					</p:commandLink>
+					<p:commandLink title="Excluir" update=":formExcluir:Excluir"
+						oncomplete="PF('confirmation').show()" immediate="true">
+						<p:graphicImage value="/resources/algaworks/images/excluir.PNG" />
+						<f:setPropertyActionListener target="#{mprima.mprima}" value="#{lista}" />
+					</p:commandLink>
+				</p:column>
+				
+				
+				<p:column headerText="Descrição">
+					<h:outputText value="#{lista.descricao}" />
+				</p:column>
+				<p:column headerText="Quantidade">
+					<h:outputText value="#{lista.qtdMaxima}" />
+				</p:column>
+								
+			</p:dataTable>
+
+
+		</h:form>
+
+		<h:form id="formAlterar">
+			<p:dialog header="Alterar" widgetVar="dialogAlterar" modal="true"
+				id="Alterar" responsive="true">
+				<p:panelGrid id="panelAlterar" columns="2">
+					<h:outputText value="Descrição:" />
+					<p:inputText value="#{mprima.mprima.descricao}" />
+					<h:outputText value="Quantidade:" />
+					<p:inputText value="#{mprima.mprima.qtdMaxima}" />
+					
+					<p:outputLabel value="Estoque" for="tipo" />
+						<p:selectOneMenu id="tipo" value="#{mprima.estoque.tipoMovimento}">
+							<f:selectItem itemLabel="Selecione..." />
+							<f:selectItem itemLabel="Entrada" itemValue="ENTRADA" />
+							<f:selectItem itemLabel="Saída" itemValue="SAIDA" />
+						</p:selectOneMenu>
+					
+				</p:panelGrid>
+				<p:commandButton value="Alterar" actionListener="#{mprima.salvar}"
+					update="formPrincipal :formPrincipal:tabelaPessoas"
+					oncomplete="PF('dialogAlterar').hide()" />
+			</p:dialog>
+		</h:form>
+
+		<h:form id="formCadastrar">
+			<p:dialog header="Cadastrar" widgetVar="dialogCadastrar" modal="true"
+				responsive="true" id="Cadastrar" resizable="false" >
+				
+				<h:panelGroup id="itemPanel" layout="block" styleClass="ui-fluid">
+				<p:messages id="msgDialog" autoUpdate="false"  />			
+				
+				<p:panelGrid id="panelCadastrar" columns="2">
+					<p:outputLabel value="Descrição:" for="desc" />
+					<p:inputText value="#{mprima.mprima.descricao}" id="desc" required="true" requiredMessage="Campo obrigatório" />	
+					<p:outputLabel value="Quantidade:" for="qtd" />
+					<p:inputText value="#{mprima.mprima.qtdMaxima}" id="qtd" required="true" requiredMessage="Campo obrigatório" />	
+									
+				</p:panelGrid>
+				<p:commandButton value="Cadastrar" actionListener="#{mprima.salvar}"
+					process="itemPanel" update="@form itemPanel formPrincipal :formPrincipal:tabelaPessoas"
+					oncomplete="if(!args.validationFailed){ PF('dialogCadastrar').hide()}else{PF('dialogCadastrar').show()}" />
+			 </h:panelGroup>
+			</p:dialog>
+			
+		</h:form>
+		<h:form id="formExcluir">
+			<p:confirmDialog id="Excluir"
+				message="Você gostaria de Deletar: #{mprima.mprima.descricao}?"
+				header="Excluir" severity="alert" widgetVar="confirmation"
+				responsive="true" >
+
+				<p:commandButton id="confirm" value="Sim"
+					oncomplete="PF('confirmation').hide()" actionListener="#{mprima.excluir}"
+					update="formPrincipal :formPrincipal:tabelaPessoas" />
+				<p:commandButton id="decline" value="Não"
+					onclick="PF('confirmation').hide()" type="button" />
+
+			</p:confirmDialog>
+		</h:form>
+
+
+	</ui:define>
+
+</ui:composition>
+

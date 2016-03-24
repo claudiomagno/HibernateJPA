@@ -1,0 +1,147 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	template="/WEB-INF/templates/Layout.xhtml">
+
+	<ui:define name="content">
+
+		<h1 class="aw-page-title">Gestão dos Estoques</h1>
+
+		<h:form id="formPrincipal">
+
+			<p:messages autoUpdate="false" />
+			<p:growl id="messages" showDetail="false" life="3000" sticky="false"
+				styleClass="ui-growl-magno" />
+
+			<p:spacer height="20" />
+
+			<p:dataTable var="lista" value="#{estoque.todasEstoque}" emptyMessage="Nenhum item adicionado." reflow="true"
+				 id="tabelaPessoas" style="width:100% ">
+				<f:facet name="header">
+                                Estoques Cadastrados	
+
+					<h:commandLink>
+						<p:graphicImage value="/resources/algaworks/images/pdf.PNG"
+							width="24" />
+						<p:dataExporter type="pdf" target="tabelaPessoas"
+							fileName="PdfMunicipios" />
+					</h:commandLink>
+
+					<p:commandLink id="excel" ajax="false">
+						<h:graphicImage value="/resources/algaworks/images/excel.PNG" />
+						<p:dataExporter type="xls"
+							postProcessor="#{municipio.postProcessXLS}"
+							target="tabelaPessoas" fileName="myexcel" />
+					</p:commandLink>
+				</f:facet>
+
+				<p:column width="55">
+
+					<f:facet name="header">
+						<p:commandLink title="Incluir" style="float: center"
+							oncomplete="PF('dialogCadastrar').show()" update="formCadastrar">
+							<p:graphicImage value="/resources/algaworks/images/cadastro.PNG" />
+						</p:commandLink>
+					</f:facet>
+					<p:commandLink title="Alterar" update=":formAlterar:Alterar"
+						oncomplete="PF('dialogAlterar').show()" immediate="true">
+						<p:graphicImage value="/resources/algaworks/images/alterar.PNG" />
+						<f:setPropertyActionListener target="#{estoque.estoque}"
+							value="#{lista}" />
+
+					</p:commandLink>
+					<p:commandLink title="Excluir" update=":formExcluir:Excluir"
+						oncomplete="PF('confirmation').show()" immediate="true">
+						<p:graphicImage value="/resources/algaworks/images/excluir.PNG" />
+						<f:setPropertyActionListener target="#{estoque.estoque}"
+							value="#{lista}" />
+					</p:commandLink>
+				</p:column>
+
+				<p:column filterBy="#{lista.dataInicial}" headerText="Data Entrada">
+					<h:outputText value="#{lista.dataInicial}" />
+				</p:column>
+				<p:column filterBy="#{lista.dataFinalizacao}" headerText="Data Saída">
+					<h:outputText value="#{lista.dataFinalizacao}" />
+				</p:column>
+				
+				<p:column  headerText="Produto">
+					<h:outputText value="#{lista.}" />
+				</p:column>
+				
+			</p:dataTable>
+
+
+		</h:form>
+
+		<h:form id="formAlterar">
+			<p:dialog header="Alterar" widgetVar="dialogAlterar" modal="true"
+				id="Alterar" responsive="true">
+				<p:panelGrid id="panelAlterar" columns="2">
+					<h:outputText value="Data Entrada:" />
+					
+					<h:outputText value="Tipo:" />
+						
+					
+				</p:panelGrid>
+				<p:commandButton value="Alterar"
+					actionListener="#{estoque.salvar}"
+					update="formPrincipal :formPrincipal:tabelaPessoas"
+					oncomplete="PF('dialogAlterar').hide()" />
+			</p:dialog>
+		</h:form>
+
+		<h:form id="formCadastrar">
+			<p:dialog header="Cadastrar" widgetVar="dialogCadastrar" modal="true"
+				responsive="true" id="Cadastrar" resizable="false">
+
+				<h:panelGroup id="itemPanel" layout="block" styleClass="ui-fluid">
+					<p:messages id="msgDialog" autoUpdate="false" />
+					<p:panelGrid id="panelCadastrar" columns="2">
+						<p:outputLabel value="Data Entrada:" for="dte" />
+						<p:calendar id="dte" pattern="dd/MM/yyyy" value="#{estoque.estoque.dataInicial}"/>
+						<p:outputLabel value="Data Saída:" for="dts" />
+						<p:calendar id="dts" pattern="dd/MM/yyyy" value="#{estoque.estoque.dataFinalizacao}"/>
+						
+						
+						<p:outputLabel value="Produto" for="pro" />
+						<p:selectOneMenu value="#{estoque.produto.id}" id="pro"
+							style="width:150px">
+							<f:selectItem itemLabel="Selecione..." />
+							<f:selectItems value="#{produto.todasProduto}" var="est"
+								itemLabel="#{est.descricao}" itemValue="#{est.id}" />
+						</p:selectOneMenu>
+
+						
+					</p:panelGrid>
+					<p:commandButton value="Cadastrar"
+						actionListener="#{estoque.salvar}" process="itemPanel"
+						update="@form itemPanel formPrincipal :formPrincipal:tabelaPessoas"
+						oncomplete="if(!args.validationFailed){ PF('dialogCadastrar').hide()}else{PF('dialogCadastrar').show()}" />
+				</h:panelGroup>
+			</p:dialog>
+
+		</h:form>
+		<h:form id="formExcluir">
+			<p:confirmDialog id="Excluir"
+				message="Você gostaria de Deletar o #{estoque.estoque.dataInicial}?"
+				header="Excluir" severity="alert" widgetVar="confirmation"
+				responsive="true">
+
+				<p:commandButton id="confirm" value="Sim"
+					oncomplete="PF('confirmation').hide()"
+					actionListener="#{estoque.excluir}"
+					update="formPrincipal :formPrincipal:tabelaPessoas" />
+				<p:commandButton id="decline" value="Não"
+					onclick="PF('confirmation').hide()" type="button" />
+
+			</p:confirmDialog>
+		</h:form>
+
+	</ui:define>
+
+</ui:composition>
+
